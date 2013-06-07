@@ -1,0 +1,58 @@
+var config = {}
+
+// log debug messages to console
+config.debug = false;
+
+config.web     = {};
+config.request = {};
+config.nagios  = {};
+config.mongo   = {};
+
+// mongo database connection string and used collections
+config.mongo.host        = 'localhost';
+config.mongo.port        = 27017;
+config.mongo.database    = 'nagios';
+config.mongo.collections = [ 'hosts', 'services' ];
+
+// set the web port for the listener and now.js handling
+config.web.port = process.env.WEB_PORT || 8080;
+
+// connection details for the nagmq host
+config.nagios.host       = ''
+config.nagios.subscriber = '5555'
+config.nagios.requester  = '5557'
+
+/* {{{ nagios request object for initial data */
+config.request.keys = [
+    'type', // Type of data being received
+    'host_name', // Host name of the host
+    'address', // IP address of the host
+    'alias', // Alias of the host
+    'service_description', // Description of the service
+    'current_state', // Current state of the check
+    'last_state', // Last state that came up
+    'last_hard_state', // Last state that failed max_attempts times
+    'is_flapping', // Whether the check is flapping
+    'last_check', // When the last check occured
+    'last_state_change', // When the last state change was
+    'last_time_up', // When the last time the host was up
+    'last_time_ok', // When the last time the service was ok
+    'current_attempt', // Current check attempt
+    'max_attempts', // Max check attempts before hard state change
+    'plugin_output', // Output of the check command
+    'long_plugin_output', // Long output (if any) of the check command
+    'icon_image', // Image of the host type
+    'icon_image_alt', // Used for division/type/software
+    'problem_has_been_acknowledged', // Whether an issue is acknowledged or not
+    'perf_data', // Performance data if available
+    'services', // Services associated with a host
+];
+config.request.for_user         = 'admin';
+config.request.include_services = true;
+config.request.expand_lists     = true;
+config.request.list_hosts       = true;
+/* }}} */
+
+module.exports = config;
+
+/* vim: se expandtab ts=4 sts=4 sw=4 fdm=marker : */
