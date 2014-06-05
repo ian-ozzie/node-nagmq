@@ -72,7 +72,7 @@ function getPriority(service, state, cur_attempts, max_attempts, acknowledged) {
         if (acknowledged) {
             return 2;
         } else {
-            return 9; 
+            return 9;
         }
     } else if (acknowledged) {
         return 1;
@@ -240,8 +240,8 @@ request.on("message", function (reply) {
 /* }}} */
 
 /* {{{ handle nagios messages */
-nagios.on("message", function(reply, message) {
-    var type = reply.toString();
+nagios.on("message", function(reply, args, message) {
+    var type = reply.toString().split(' ')[0];
     if (!active && type != 'program_status') { return; }
 
     var data = JSON.parse(message);
