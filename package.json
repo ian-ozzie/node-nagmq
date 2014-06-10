@@ -1,9 +1,9 @@
 {
-    "name" : "nagios-ops"
-  , "version" : "0.1.0"
-  , "dependencies" : {
-        "zmq" : "2.7.0"
-      , "mongodb" : "1.1.4"
-      , "socket.io" : "0.9.10"
-    }
+  "name": "nagios-ops",
+  "version": "0.1.0",
+  "dependencies": {
+    "mongodb": "1.1.4",
+    "socket.io": "^1.0.4",
+    "zmq": "2.7.0"
+  }
 }

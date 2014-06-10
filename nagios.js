@@ -6,40 +6,28 @@ var config = require('./config');
 
 /* {{{ pull in modules and init variables */
 // initialise global variables
-var active = false
-  , state  = 0;
+var active = false,
+    state  = 0;
 
 // initialise socket.io
-var io = require('socket.io').listen(config.web.port);
-io.enable('browser client minification');  // send minified client
-io.enable('browser client etag');          // apply etag caching logic based on version number
-io.enable('browser client gzip');          // gzip the file
-io.set('log level', 1);                    // reduce logging
-io.set('transports',
-// enable all transports (optional if you want flashsocket)
-  [ 'websocket'
-  , 'flashsocket'
-  , 'htmlfile'
-  , 'xhr-polling'
-  , 'jsonp-polling'
-]);
+var io = require('socket.io')(config.web.port);
 
 // load zmq to communicate with nagmq host
-var zmq     = require('zmq')
-  , nagios  = zmq.socket('sub')
-  , request = zmq.socket('req');
+var zmq     = require('zmq'),
+    nagios  = zmq.socket('sub'),
+    request = zmq.socket('req');
 // connect to subscriber socket
-    nagios.connect('tcp://' + config.nagios.host + ':' + config.nagios.subscriber);
-    nagios.subscribe('');
+nagios.connect('tcp://' + config.nagios.host + ':' + config.nagios.subscriber);
+nagios.subscribe('');
 // initialise request socket
-    request.connect('tcp://' + config.nagios.host + ':' + config.nagios.requester);
+request.connect('tcp://' + config.nagios.host + ':' + config.nagios.requester);
 
 // initialise mongodb vars
-var mongo    = require('mongodb')
-  , server   = new mongo.Server(config.mongo.host, config.mongo.port, {auto_reconnect: true})
-  , db       = new mongo.Db('nagios', server, {strict: true})
-  , hosts    = new mongo.Collection(db, 'hosts')
-  , services = new mongo.Collection(db, 'services');
+var mongo    = require('mongodb'),
+    server   = new mongo.Server(config.mongo.host, config.mongo.port, {auto_reconnect: true}),
+    db       = new mongo.Db('nagios', server, {strict: true}),
+    hosts    = new mongo.Collection(db, 'hosts'),
+    services = new mongo.Collection(db, 'services');
 
 // open mongodb
 db.open(function(err, db) {
@@ -61,7 +49,7 @@ var priorityMap = {
     7: 'hard critical',
     8: 'soft critical',
     9: 'hard down'
-}
+};
 /* }}} */
 
 /* {{{ create priority from issues found */
@@ -112,7 +100,7 @@ io.sockets.on('connection', function (socket) {
                     var hostId = issues[i].host;
                     var serviceId = issues[i].service;
                     if (typeof returnHash[hostId] == 'undefined') {
-                        returnHash[hostId] = { }
+                        returnHash[hostId] = { };
                     }
 
                     returnHash[hostId][serviceId] = issues[i];
@@ -244,7 +232,12 @@ nagios.on("message", function(reply, args, message) {
     var type = reply.toString().split(' ')[0];
     if (!active && type != 'program_status') { return; }
 
+    if (type === '') {
+        return;
+    }
+
     var data = JSON.parse(message);
+    var id;
 
     // check if the message is for the status of zmq
     switch (type) {
@@ -272,7 +265,7 @@ nagios.on("message", function(reply, args, message) {
             break;
         case 'host_check_initiate':
             /* {{{ host check initiated handling */
-            var id = { host: data.host_name, service: 'DOWN' };
+            id = { host: data.host_name, service: 'DOWN' };
             services.findOne(id, function(err, service) {
                 if (err) {
                     console.log('Error finding service. Details:');
@@ -303,7 +296,7 @@ nagios.on("message", function(reply, args, message) {
             break;
         case 'host_check_processed':
             /* {{{ host check complete handling */
-            var id = { host: data.host_name, service: 'DOWN' };
+            id = { host: data.host_name, service: 'DOWN' };
             services.findOne(id, function(err, service) {
                 if (err) {
                     console.log('Error finding service. Details:');
@@ -354,7 +347,7 @@ nagios.on("message", function(reply, args, message) {
             break;
         case 'service_check_initiate':
             /* {{{ service check initiated handling */
-            var id = { host: data.host_name, service: data.service_description };
+            id = { host: data.host_name, service: data.service_description };
             services.findOne(id, function(err, service) {
                 if (err) {
                     console.log('Error finding service. Details:');
@@ -385,7 +378,7 @@ nagios.on("message", function(reply, args, message) {
             break;
         case 'service_check_processed':
             /* {{{ service check processed handling */
-            var id = { host: data.host_name, service: data.service_description };
+            id = { host: data.host_name, service: data.service_description };
             services.findOne(id, function(err, service) {
                 if (err) {
                     console.log('Error finding service. Details:');
